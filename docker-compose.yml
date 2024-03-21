@@ -1,0 +1,15 @@
+services:
+  backend:
+    build: 
+      context: .
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    command: [
+      "poetry", "run",
+      "uvicorn",
+      "main:app",
+      "--reload",
+      "--host", "0.0.0.0",
+    ]
