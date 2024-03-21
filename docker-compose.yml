@@ -1,4 +1,10 @@
 services:
+  db:
+    image: "mongo"
+    volumes:
+      - mongo-data:/data/db
+    env_file:
+      - .env
   backend:
     build: 
       context: .
@@ -7,9 +13,10 @@ services:
     ports:
       - "8000:8000"
     command: [
-      "poetry", "run",
-      "uvicorn",
-      "main:app",
-      "--reload",
-      "--host", "0.0.0.0",
+      "poetry", "run", "python", "app/main.py",
     ]
+    depends_on:
+      - db
+
+volumes:
+  mongo-data:
