@@ -1,4 +1,6 @@
-from pydantic import BaseModel, EmailStr
+import re
+
+from pydantic import BaseModel, EmailStr, field_validator
 
 
 class UserSignUp(BaseModel):
@@ -6,12 +8,29 @@ class UserSignUp(BaseModel):
     password: str
     email: EmailStr
 
+    @field_validator("password")
+    def check_password(cls, value):
+        value = str(value)
+        if len(value) < 8:
+            raise ValueError("Password must have at least 8 characters")
+        if not any(c.isupper() for c in value):
+            raise ValueError("Password must have at least one uppercase letter")
+        if not any(c.islower() for c in value):
+            raise ValueError("Password must have at least one lowercase letter")
+        if not any(c.isdigit() for c in value):
+            raise ValueError("Password must have at least one digit")
+        if re.match("^[A-Za-z0-9]*$", value):
+            raise ValueError("Password must have at least one symbol")
+        if value == "Password@1234":
+            raise ValueError("This password is not allowed")
+        return value
+
     class Config:
         json_schema_extra = {
             "example": {
                 "username": "cool_username",
                 "email": "emmail@somwhere.somthing",
-                "password": "3xt3m#",
+                "password": "Password@1234",
             }
         }
 
@@ -27,7 +46,7 @@ class UserLogin(BaseModel):
         json_schema_extra = {
             "example": {
                 "username": "cool_username",
-                "password": "3xt3m#",
+                "password": "Password@1234",
             }
         }
 
