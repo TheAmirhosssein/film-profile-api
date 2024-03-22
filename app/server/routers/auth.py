@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, HTTPException, Response, status
 from server.database.database import db
 from server.models.user import UserSignUp
 from server.schemas import user_schemas
@@ -19,8 +19,10 @@ async def sign_up(user: UserSignUp, response: Response):
         {"$or": [{"username": user["username"]}, {"email": user["email"]}]}
     )
     if user_exist:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"response": "user with entered info already exists"}
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this information already exist",
+        )
     else:
         hashed_password: dict = password_generator(user["password"])
         user["password"] = hashed_password["password"]
