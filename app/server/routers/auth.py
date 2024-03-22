@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response, status
 from server.database.database import db
-from server.models.user import UserLogin, UserSignUp
-from server.schemas import user_schemas
+from app.server.models.user_model import UserLogin, UserSignUp
+from app.server.schemas import user_schema
 from server.utils import hasher, jwt
 
 router = APIRouter()
@@ -29,7 +29,7 @@ async def sign_up(user: UserSignUp, response: Response):
         user["salt"] = hashed_password["salt"]
         db.users.insert_one(user)
         response.status_code = status.HTTP_201_CREATED
-        return user_schemas.user_serializer(user)
+        return user_schema.user_serializer(user)
 
 
 @router.post("/login/", summary="create access and refresh tokens for user")
