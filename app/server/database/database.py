@@ -3,6 +3,5 @@ from dotenv import dotenv_values
 
 config = dotenv_values(".env")
 
-
-client = MongoClient(config["MONGODB_URI"], config["MONGODB_PORT"])
+client = MongoClient(config["MONGODB_URL"])
 db = client["movies"]
