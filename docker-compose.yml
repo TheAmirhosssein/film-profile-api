@@ -3,18 +3,14 @@ services:
     image: "mongo"
     volumes:
       - mongo-data:/data/db
-    env_file:
-      - .env
   backend:
-    build: 
+    build:
       context: .
     volumes:
       - ./:/app
     ports:
       - "8000:8000"
-    command: [
-      "poetry", "run", "python", "app/main.py",
-    ]
+    command: ["poetry", "run", "python", "app/main.py"]
     depends_on:
       - db
 
