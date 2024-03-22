@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Response, status
 from server.database.database import db
-from app.server.models.user_model import UserLogin, UserSignUp
-from app.server.schemas import user_schema
+from server.models.user_model import UserLogin, UserSignUp
+from server.schemas import user_schema
 from server.utils import hasher, jwt
 
 router = APIRouter()

@@ -1,10 +1,11 @@
 import re
 
 from pydantic import BaseModel, EmailStr, field_validator
+from fastapi import Body
 
 
 class UserSignUp(BaseModel):
-    username: str
+    username: str = Body(min_length=6, regex="^[a-zA-Z0-9_]*$", max_length=30)
     password: str
     email: EmailStr
 
