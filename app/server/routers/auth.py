@@ -46,7 +46,7 @@ async def login(credential: user_model.UserLogin):
     if not await hasher.check_password(user["password"], credential["password"]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="user_model email or password",
+            detail="Incorrect username or password",
         )
 
     return {

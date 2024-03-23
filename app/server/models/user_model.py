@@ -6,6 +6,7 @@ from fastapi import Body
 
 class UserSignUp(BaseModel):
     username: str = Body(min_length=6, regex="^[a-zA-Z0-9_]*$", max_length=30)
+    fullname: str = Body(max_length=100)
     password: str
     email: EmailStr
 
@@ -31,6 +32,7 @@ class UserSignUp(BaseModel):
             "example": {
                 "username": "cool_username",
                 "email": "emmail@somwhere.somthing",
+                "fullname": "firstname lastname",
                 "password": "Password@1234",
             }
         }
@@ -71,6 +73,7 @@ class RefreshToken(BaseModel):
 
 class UserUpdate(BaseModel):
     username: str = Body(min_length=6, regex="^[a-zA-Z0-9_]*$", max_length=30)
+    fullname: str = Body(max_length=100)
     email: EmailStr
 
     class Settings:
