@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response, status, Depends
 from server.database.database import db
 from server.models import user_model
 from server.schemas import user_schema
@@ -49,8 +49,8 @@ async def login(credential: user_model.UserLogin):
         )
 
     return {
-        "access_token": jwt.create_access_token(user["username"]),
-        "refresh_token": jwt.create_refresh_token(user["username"]),
+        "access_token": await jwt.create_access_token(user["username"]),
+        "refresh_token": await jwt.create_refresh_token(user["username"]),
     }
 
 
@@ -65,3 +65,8 @@ async def refresh_token(token: user_model.RefreshToken):
         )
     else:
         return {"access_token": access_token}
+
+
+@router.get("/profile/", summary="return user info")
+async def profile(user=Depends(jwt.JWTBearer())):
+    return user_schema.user_serializer(user)
