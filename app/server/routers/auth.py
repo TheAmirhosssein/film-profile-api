@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, Response, status, Depends
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from server.database.database import db
+from server.database.shortcuts import is_available
 from server.models import user_model
 from server.schemas import user_schema
 from server.utils import hasher, jwt
@@ -49,8 +50,8 @@ async def login(credential: user_model.UserLogin):
         )
 
     return {
-        "access_token": await jwt.create_access_token(user["username"]),
-        "refresh_token": await jwt.create_refresh_token(user["username"]),
+        "access_token": await jwt.create_access_token(user["_id"]),
+        "refresh_token": await jwt.create_refresh_token(user["_id"]),
     }
 
 
@@ -70,3 +71,26 @@ async def refresh_token(token: user_model.RefreshToken):
 @router.get("/profile/", summary="return user info")
 async def profile(user=Depends(jwt.JWTBearer())):
     return user_schema.user_serializer(user)
+
+
+@router.put("/profile/", summary="edit profile")
+async def edit_profile(
+    user_info: user_model.UserUpdate,
+    user=Depends(jwt.JWTBearer()),
+):
+    user_info = dict(user_info)
+    if not await is_available(
+        user_info["username"], user["username"], "users", "username"
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already taken",
+        )
+    elif not await is_available(user_info["email"], user["email"], "users", "email"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email already exist",
+        )
+    else:
+        db.users.update_one({"username": user["username"]}, {"$set": user_info})
+        return user_info

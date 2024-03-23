@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Any
+from bson import ObjectId
+
 
 from dotenv import dotenv_values
 from fastapi import HTTPException, Request
@@ -57,7 +59,7 @@ async def refresh_access_token(refresh_token: str) -> str | None:
 
 async def get_user(token: str) -> dict | None:
     decoded_token = await decode_jwt(token)
-    return db.users.find_one({"username": decoded_token["sub"]})
+    return db.users.find_one({"_id": ObjectId(decoded_token["sub"])})
 
 
 class JWTBearer(HTTPBearer):

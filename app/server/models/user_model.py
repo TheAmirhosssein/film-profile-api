@@ -67,3 +67,11 @@ class RefreshToken(BaseModel):
 
     class Settings:
         name = "refresh_token"
+
+
+class UserUpdate(BaseModel):
+    username: str = Body(min_length=6, regex="^[a-zA-Z0-9_]*$", max_length=30)
+    email: EmailStr
+
+    class Settings:
+        name = "user update"
