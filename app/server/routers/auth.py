@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response, status
 from server.database.database import db
-from server.models.user_model import UserLogin, UserSignUp
+from server.models import user_model
 from server.schemas import user_schema
 from server.utils import hasher, jwt
 
@@ -13,7 +13,7 @@ router = APIRouter(
 
 
 @router.post("/sign-up/", summary="create new user")
-async def sign_up(user: UserSignUp, response: Response):
+async def sign_up(user: user_model.UserSignUp, response: Response):
     user: dict = dict(user)
     user_exist: None | dict = db.users.find_one(
         {"$or": [{"username": user["username"]}, {"email": user["email"]}]}
@@ -33,7 +33,7 @@ async def sign_up(user: UserSignUp, response: Response):
 
 
 @router.post("/login/", summary="create access and refresh tokens for user")
-async def login(credential: UserLogin):
+async def login(credential: user_model.UserLogin):
     credential = dict(credential)
     user = db.users.find_one({"username": credential["username"]})
     if user is None:
@@ -45,10 +45,23 @@ async def login(credential: UserLogin):
     if not hasher.check_password(user["password"], credential["password"]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Incorrect email or password",
+            detail="user_model email or password",
         )
 
     return {
         "access_token": jwt.create_access_token(user["username"]),
         "refresh_token": jwt.create_refresh_token(user["username"]),
     }
+
+
+@router.post("/refresh/", summary="get new access token")
+async def refresh_token(token: user_model.RefreshToken):
+    token = dict(token)
+    access_token = jwt.refresh_access_token(token["refresh_token"])
+    if access_token is None:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="Given refresh token is not valid",
+        )
+    else:
+        return {"access_token": access_token}

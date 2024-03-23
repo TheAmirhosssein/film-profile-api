@@ -4,7 +4,7 @@ from typing import Any
 from dotenv import dotenv_values
 from fastapi import HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import jwt, exceptions
+from jose import exceptions, jwt
 
 config = dotenv_values(".env")
 
@@ -37,13 +37,21 @@ def create_refresh_token(subject: str | Any, expires_delta: int = None) -> str:
     return encoded_jwt
 
 
-def decode_jwt(token: str) -> dict | None:
+def decode_jwt(token: str, secret_key: str = JWT_SECRET_KEY) -> dict | None:
     try:
-        decoded_token = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
+        decoded_token = jwt.decode(token, secret_key, algorithms=[ALGORITHM])
         expiration_time = datetime.fromtimestamp(decoded_token["exp"])
         return decoded_token if expiration_time >= datetime.now() else None
     except exceptions.JWTError as _:
         return None
+
+
+def refresh_access_token(refresh_token: str) -> str | None:
+    decoded_token = decode_jwt(refresh_token, JWT_REFRESH_SECRET_KEY)
+    if decoded_token is None:
+        return None
+    else:
+        return create_access_token(decoded_token["sub"])
 
 
 class JWTBearer(HTTPBearer):
