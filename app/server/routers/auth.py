@@ -49,6 +49,6 @@ async def login(credential: UserLogin):
         )
 
     return {
-        "access_token": jwt.create_refresh_token(user["username"]),
+        "access_token": jwt.create_access_token(user["username"]),
         "refresh_token": jwt.create_refresh_token(user["username"]),
     }
