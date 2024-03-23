@@ -24,7 +24,7 @@ async def sign_up(user: user_model.UserSignUp, response: Response):
             detail="User with this information already exist",
         )
     else:
-        hashed_password: dict = hasher.password_generator(user["password"])
+        hashed_password: dict = await hasher.password_generator(user["password"])
         user["password"] = hashed_password["password"]
         user["salt"] = hashed_password["salt"]
         db.users.insert_one(user)
@@ -42,7 +42,7 @@ async def login(credential: user_model.UserLogin):
             detail="Incorrect username or password",
         )
 
-    if not hasher.check_password(user["password"], credential["password"]):
+    if not await hasher.check_password(user["password"], credential["password"]):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="user_model email or password",
