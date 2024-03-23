@@ -1,7 +1,6 @@
-import re
-
 from pydantic import BaseModel, EmailStr, field_validator
 from fastapi import Body
+from server.utils.validators import password_validator
 
 
 class UserSignUp(BaseModel):
@@ -12,20 +11,7 @@ class UserSignUp(BaseModel):
 
     @field_validator("password")
     def check_password(cls, value):
-        value = str(value)
-        if len(value) < 8:
-            raise ValueError("Password must have at least 8 characters")
-        if not any(c.isupper() for c in value):
-            raise ValueError("Password must have at least one uppercase letter")
-        if not any(c.islower() for c in value):
-            raise ValueError("Password must have at least one lowercase letter")
-        if not any(c.isdigit() for c in value):
-            raise ValueError("Password must have at least one digit")
-        if re.match("^[A-Za-z0-9]*$", value):
-            raise ValueError("Password must have at least one symbol")
-        if value == "Password@1234":
-            raise ValueError("This password is not allowed")
-        return value
+        return password_validator(str(value))
 
     class Config:
         json_schema_extra = {
@@ -76,5 +62,24 @@ class UserUpdate(BaseModel):
     fullname: str = Body(max_length=100)
     email: EmailStr
 
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "username": "cool_username",
+                "email": "emmail@somwhere.somthing",
+                "fullname": "firstname lastname",
+            }
+        }
+
     class Settings:
         name = "user update"
+
+
+class ChangePassword(BaseModel):
+    password: str
+    new_password: str
+    new_password2: str
+
+    @field_validator("new_password")
+    def check_password(cls, value):
+        return password_validator(str(value))

@@ -94,3 +94,26 @@ async def edit_profile(
     else:
         db.users.update_one({"username": user["username"]}, {"$set": user_info})
         return user_info
+
+
+@router.put("/change-password/", summary="change password")
+async def change_password(
+    passwords: user_model.ChangePassword, user=Depends(jwt.JWTBearer())
+):
+    passwords = dict(passwords)
+    if passwords["new_password"] != passwords["new_password2"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords don't match",
+        )
+    elif not await hasher.check_password(user["password"], passwords["password"]):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password is not correct",
+        )
+    else:
+        hashed_password: dict = await hasher.password_generator(
+            passwords["new_password"]
+        )
+        db.users.update_one({"username": user["username"]}, {"$set": hashed_password})
+        return {"detail": "Password changed!"}
