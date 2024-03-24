@@ -1,5 +1,6 @@
 import math
 
+from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, status
 from server.database.database import db
 from server.models import movie_model
@@ -37,3 +38,14 @@ async def movies_list(page: int = 1, size: int = 10):
     movies = db.movies.find().skip((page - 1) * size).limit(size)
     serialized_movies = movies_serializer(movies)
     return {"page_count": pages_count, "result": serialized_movies}
+
+
+@router.get("/movies/{object_id}", summary="movie detail")
+async def movie_detail(object_id: str):
+    movie = db.movies.find_one({"_id": ObjectId(object_id)})
+    if movie is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="movie not found"
+        )
+    serialized_movies = movie_serializer(movie)
+    return serialized_movies
