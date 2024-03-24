@@ -1,3 +1,4 @@
+import datetime
 import re
 
 
@@ -15,3 +16,14 @@ def password_validator(password: str) -> str:
     if password == "Password@1234":
         raise ValueError("This password is not allowed")
     return password
+
+
+def release_date_validator(year: str) -> str:
+    date = datetime.date.today()
+    current_year = int(date.strftime("%Y"))
+    FIRST_RELEASE_DATE = 1895
+    if year > current_year:
+        raise ValueError("the movie is not released yet")
+    if year < FIRST_RELEASE_DATE:
+        raise ValueError("the movie release year is too old")
+    return year
