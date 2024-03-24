@@ -10,6 +10,6 @@ router = APIRouter(prefix="/movie", tags=["movie"])
 @router.post("/add-movie/", summary="add movies")
 async def add_movie(movie: movie_model.AddMovie, user=Depends(JWTBearer())):
     movie = dict(movie)
-    movie["created_user"] = user
+    movie["user_id"] = user["_id"]
     db.movies.insert_one(movie)
     return movie_serializer(movie)
