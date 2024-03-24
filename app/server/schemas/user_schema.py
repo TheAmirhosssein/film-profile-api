@@ -1,4 +1,4 @@
-def user_serializer(user: any) -> dict:
+def user_serializer(user: dict) -> dict:
     return {
         "username": user["username"],
         "email": user["email"],

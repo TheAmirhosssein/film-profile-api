@@ -23,7 +23,7 @@ class AddMovie(BaseModel):
         }
 
     @field_validator("release_date")
-    def release_date_validator(cls, value):
+    def release_date_check(cls, value):
         return release_date_validator(int(value))
 
     class Settings:

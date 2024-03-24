@@ -18,7 +18,7 @@ def password_validator(password: str) -> str:
     return password
 
 
-def release_date_validator(year: str) -> str:
+def release_date_validator(year: int) -> int:
     date = datetime.date.today()
     current_year = int(date.strftime("%Y"))
     FIRST_RELEASE_DATE = 1895

@@ -13,8 +13,8 @@ router = APIRouter(
 
 
 @router.post("/sign-up/", summary="create new user")
-async def sign_up(user: user_model.UserSignUp, response: Response):
-    user: dict = dict(user)
+async def sign_up(user_json: user_model.UserSignUp, response: Response):
+    user: dict = dict(user_json)
     user_exist: None | dict = db.users.find_one(
         {"$or": [{"username": user["username"]}, {"email": user["email"]}]}
     )
@@ -33,8 +33,8 @@ async def sign_up(user: user_model.UserSignUp, response: Response):
 
 
 @router.post("/login/", summary="create access and refresh tokens for user")
-async def login(credential: user_model.UserLogin):
-    credential = dict(credential)
+async def login(credential_json: user_model.UserLogin):
+    credential: dict = dict(credential_json)
     user = db.users.find_one({"username": credential["username"]})
     if user is None:
         raise HTTPException(
@@ -55,8 +55,8 @@ async def login(credential: user_model.UserLogin):
 
 
 @router.post("/refresh/", summary="get new access token")
-async def refresh_token(token: user_model.RefreshToken):
-    token = dict(token)
+async def refresh_token(token_json: user_model.RefreshToken):
+    token: dict = dict(token_json)
     access_token = jwt.refresh_access_token(token["refresh_token"])
     if access_token is None:
         raise HTTPException(
@@ -74,10 +74,10 @@ async def profile(user=Depends(jwt.JWTBearer())):
 
 @router.put("/profile/", summary="edit profile")
 async def edit_profile(
-    user_info: user_model.UserUpdate,
+    user_info_json: user_model.UserUpdate,
     user=Depends(jwt.JWTBearer()),
 ):
-    user_info = dict(user_info)
+    user_info: dict = dict(user_info_json)
     if not await is_available(
         user_info["username"], user["username"], "users", "username"
     ):
@@ -97,9 +97,9 @@ async def edit_profile(
 
 @router.put("/change-password/", summary="change password")
 async def change_password(
-    passwords: user_model.ChangePassword, user=Depends(jwt.JWTBearer())
+    passwords_json: user_model.ChangePassword, user=Depends(jwt.JWTBearer())
 ):
-    passwords = dict(passwords)
+    passwords: dict = dict(passwords_json)
     if passwords["new_password"] != passwords["new_password2"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
