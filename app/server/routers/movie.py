@@ -1,3 +1,5 @@
+import math
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from server.database.database import db
 from server.models import movie_model
@@ -30,6 +32,8 @@ async def add_movie(movie_json: movie_model.AddMovie, user=Depends(JWTBearer()))
 
 
 @router.get("/movies/", summary="movies list")
-async def movies_list():
-    movies = movies_serializer(db.movies.find())
-    return movies
+async def movies_list(page: int = 1, size: int = 10):
+    pages_count: int = math.ceil(db.movies.count_documents({}) / size)
+    movies = db.movies.find().skip((page - 1) * size).limit(size)
+    serialized_movies = movies_serializer(movies)
+    return {"page_count": pages_count, "result": serialized_movies}
