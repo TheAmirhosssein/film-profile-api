@@ -5,7 +5,6 @@ from server.models import user_model
 from server.schemas import user_schema
 from server.utils import hasher, jwt
 
-router = APIRouter()
 
 router = APIRouter(
     prefix="/auth",
