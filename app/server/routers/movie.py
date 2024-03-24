@@ -49,3 +49,38 @@ async def movie_detail(object_id: str):
         )
     serialized_movies = movie_serializer(movie)
     return serialized_movies
+
+
+@router.put("/movies/{object_id}", summary="movie detail")
+async def movie_update(
+    object_id: str, movie_json: movie_model.EditMovie, user=Depends(JWTBearer())
+):
+    movie = db.movies.find_one({"_id": ObjectId(object_id)})
+    new_movie_info: dict = dict(movie_json)
+    if movie is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="movie not found"
+        )
+    if not ObjectId(movie["user_id"]) == ObjectId(user["_id"]):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="you can not edit this movie"
+        )
+    if (
+        movie["director"] != new_movie_info["director"]
+        or movie["title"] != new_movie_info["title"]
+    ):
+        movie_exist = db.movies.find_one(
+            {
+                "$and": [
+                    {"title": new_movie_info["title"]},
+                    {"director": new_movie_info["director"].lower()},
+                ]
+            }
+        )
+        if movie_exist is not None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Movie with same info is exists",
+            )
+    db.movies.update_one({"_id": ObjectId(object_id)}, {"$set": new_movie_info})
+    return movie_serializer(db.movies.find_one({"_id": ObjectId(object_id)}))
