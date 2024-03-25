@@ -94,9 +94,9 @@ async def watched_movie(object_id: str, user=Depends(JWTBearer())):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Movie with same info is exists",
         )
-    if ObjectId(user["_id"]) not in movie.get("watched_user", []):
+    if ObjectId(user["_id"]) not in movie.get("watched_by", []):
         db.movies.update_one(
-            {"_id": ObjectId(object_id)}, {"$push": {"watched_user": user["_id"]}}
+            {"_id": ObjectId(object_id)}, {"$push": {"watched_by": user["_id"]}}
         )
     return {"detail": "movie added into your watched list"}
 
@@ -109,12 +109,12 @@ async def unwatched_movie(object_id: str, user=Depends(JWTBearer())):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Movie does not exist",
         )
-    if ObjectId(user["_id"]) in movie.get("watched_user", []):
+    if ObjectId(user["_id"]) in movie.get("watched_by", []):
         db.movies.update_one(
-            {"_id": ObjectId(object_id)}, {"$push": {"watched_user": user["_id"]}}
+            {"_id": ObjectId(object_id)}, {"$push": {"watched_by": user["_id"]}}
         )
     db.movies.update_one(
-        {"_id": ObjectId(object_id)}, {"$pull": {"watched_user": user["_id"]}}
+        {"_id": ObjectId(object_id)}, {"$pull": {"watched_by": user["_id"]}}
     )
     return {"detail": "movie removed from your watched list"}
 
@@ -127,5 +127,5 @@ async def user_movies(username: str):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User does not exist",
         )
-    movies = db.movies.find({"watched_user": ObjectId(user["_id"])})
+    movies = db.movies.find({"watched_by": ObjectId(user["_id"])})
     return movies_serializer(movies)

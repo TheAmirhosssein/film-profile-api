@@ -8,12 +8,16 @@ from server.schemas.user_schema import user_serializer
 
 def movie_serializer(
     movie: Optional[Dict[str, str]],
-) -> Dict[str, str | Dict[str, str]]:
+) -> Dict[str, str | Dict[str, str] | list]:
     if movie is None:
         return {}
     user_id: str = str(movie["user_id"])
     movie_user: Optional[Dict[str, str]] = db.users.find_one({"_id": ObjectId(user_id)})
     user = user_serializer(movie_user)
+    watched_by = [
+        user_serializer(db.users.find_one({"_id": ObjectId(watched_user)}))
+        for watched_user in movie.get("watched_by", [])
+    ]
     return {
         "id": str(movie["_id"]),
         "title": movie["title"],
@@ -23,6 +27,7 @@ def movie_serializer(
         "genres": movie["genres"],
         "actors": movie["actors"],
         "created_by": user,
+        "watched_by": watched_by,
     }
 
 
