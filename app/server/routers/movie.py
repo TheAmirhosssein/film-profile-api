@@ -40,7 +40,7 @@ async def movies_list(page: int = 1, size: int = 10):
     return {"page_count": pages_count, "result": serialized_movies}
 
 
-@router.get("/movies/{object_id}", summary="movie detail")
+@router.get("/movies/{object_id}/", summary="movie detail")
 async def movie_detail(object_id: str):
     movie = db.movies.find_one({"_id": ObjectId(object_id)})
     if movie is None:
@@ -84,3 +84,11 @@ async def movie_update(
             )
     db.movies.update_one({"_id": ObjectId(object_id)}, {"$set": new_movie_info})
     return movie_serializer(db.movies.find_one({"_id": ObjectId(object_id)}))
+
+
+@router.patch("/watch-movie/{object_id}/", summary="mark movie as watched")
+async def watch_movie(object_id: str, user=Depends(JWTBearer())):
+    db.movies.update_one(
+        {"_id": ObjectId(object_id)}, {"$push": {"watched_user": user["_id"]}}
+    )
+    return {"detail": "movie added into your watched list"}
