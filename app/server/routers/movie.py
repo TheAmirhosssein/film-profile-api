@@ -86,9 +86,34 @@ async def movie_update(
     return movie_serializer(db.movies.find_one({"_id": ObjectId(object_id)}))
 
 
-@router.patch("/watch-movie/{object_id}/", summary="mark movie as watched")
-async def watch_movie(object_id: str, user=Depends(JWTBearer())):
-    db.movies.update_one(
-        {"_id": ObjectId(object_id)}, {"$push": {"watched_user": user["_id"]}}
-    )
+@router.patch("/watched-movie/{object_id}/", summary="mark movie as watched")
+async def watched_movie(object_id: str, user=Depends(JWTBearer())):
+    movie = db.movies.find_one({"_id": ObjectId(object_id)})
+    if movie is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Movie with same info is exists",
+        )
+    if ObjectId(user["_id"]) not in movie.get("watched_user", []):
+        db.movies.update_one(
+            {"_id": ObjectId(object_id)}, {"$push": {"watched_user": user["_id"]}}
+        )
     return {"detail": "movie added into your watched list"}
+
+
+@router.patch("/unwatched-movie/{object_id}/", summary="remove movie from watched list")
+async def unwatched_movie(object_id: str, user=Depends(JWTBearer())):
+    movie = db.movies.find_one({"_id": ObjectId(object_id)})
+    if movie is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Movie with same info is exists",
+        )
+    if ObjectId(user["_id"]) in movie.get("watched_user", []):
+        db.movies.update_one(
+            {"_id": ObjectId(object_id)}, {"$push": {"watched_user": user["_id"]}}
+        )
+    db.movies.update_one(
+        {"_id": ObjectId(object_id)}, {"$pull": {"watched_user": user["_id"]}}
+    )
+    return {"detail": "movie removed from your watched list"}
